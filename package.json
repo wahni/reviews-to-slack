@@ -1,0 +1,23 @@
+{
+  "name": "reviews-to-slack",
+  "version": "1.0.0",
+  "description": "Post app reviews to Slack",
+  "keywords": [
+    "reviews",
+    "Slack",
+    "App Store",
+    "post"
+  ],
+  "bugs": "",
+  "author": "Niklas Wahlén <niklas.wahlen@gmail.com>",
+  "license": "MIT",
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/wahni/reviews-to-slack.git"
+  },
+  "private": true,
+  "dependencies": {
+    "request": "~2.67.0",
+    "rss-watcher": "~1.3.0"
+  }
+}
