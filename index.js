@@ -14,6 +14,8 @@ var WATCHER_EVENTS = {
 
 (function() {
   exports.start = function start(config) {
+    var appInformation = {};
+
     var watcher;
     watcher = new Watcher(config.feed);
     watcher.set({
@@ -23,10 +25,11 @@ var WATCHER_EVENTS = {
 
     watcher.on(WATCHER_EVENTS.NEW_ARTICLE, function onNewArticle(review) {
       if (isAppInformationEntry(review)) {
-		    if (config.debug) console.log("Received app information");
+        if (config.debug) console.log("INFO: Received new app information");
+        updateAppInformation(config, review, appInformation);
       } else {
-		    if (config.debug) console.log("Received new review: " + review);
-		    message = slackMessage(review, config);
+		    if (config.debug) console.log("INFO: Received new review: " + review);
+		    message = slackMessage(review, config, appInformation);
 		    return postToSlack(message, config);
 	    }
     });
@@ -35,40 +38,27 @@ var WATCHER_EVENTS = {
       return console.error("ERROR: for new review: " + error);
     });
 
-    return watcher.run(function run(error, reviews) {
-      if (error != null) {
-        return console.error("ERROR: Could not parse feed " + config.feed + ", " + error);
-      }
+    return watcher.run(function run(error, entries) {
+      if (error != null) return console.error("ERROR: Could not parse feed " + config.feed + ", " + error);
 
-      if (reviews == null) {
-        return console.log("WARNING: Currently no reviews available for " + config.feed);
-      }
+      if (entries == null) return console.log("WARNING: Currently no reviews available for " + config.feed);
 
-      // Parse existing reviews for app information
-      for (var i = 0; i < reviews.length; i++) {
-        var review = reviews[i];
+      // Parse existing entries for app information
+      for (var i = 0; i < entries.length; i++) {
+        var entry = entries[i];
         
-        // App information is available in an entry with some special fields
-        if (isAppInformationEntry(review)) {
-          if (config.appName == null && review['im:name'] != null) {
-            config.appName = review['im:name']['#'];
-            if (config.debug) console.log("Found app name: " + config.appName);
-          }
+        if (isAppInformationEntry(entry)) {
+          updateAppInformation(config, entry, appInformation);
+        }
 
-          if (config.appIcon== null && review['im:image'] && review['im:image'].length > 0) {
-            config.appIcon = review['im:image'][0]['#'];
-            if (config.debug) console.log("Found app icon: " + config.appIcon);
-          }
-
-          if (config.appLink == null && review['link']) {
-            config.appLink = review['link'];
-            if (config.debug) console.log("Found app link: " + config.appLink);
-          }
+        if (i == 1) {
+          message = slackMessage(entry, config, appInformation);
+          postToSlack(message, config);
         }
       }
 
       if (config.debug) {
-        console.log("Started watching app: " + config.appName);
+        console.log("INFO: Started watching app: " + (config.appName ? config.appName : appInformation.appName));
         var welcomeMessage = {
           "username": config.botUsername,
           "icon_url": config.botIcon,
@@ -76,10 +66,10 @@ var WATCHER_EVENTS = {
           "attachments": [
             {
               "mrkdwn_in": ["pretext", "author_name"],
-              "fallback": "This channel will now receive App Store reviews for " + config.appName,
+              "fallback": "This channel will now receive App Store reviews for " + (config.appName ? config.appName : appInformation.appName),
               "pretext": "This channel will now receive App Store reviews for ",
-              "author_name": config.appName,
-              "author_icon": config.appIcon
+              "author_name": config.appName ? config.appName : appInformation.appName,
+              "author_icon": config.appIcon ? config.appIcon : appInformation.appIcon
             }
           ]
         }
@@ -89,12 +79,30 @@ var WATCHER_EVENTS = {
   }
 }).call(this);
 
-var isAppInformationEntry = function(review) {
-    return review != null && review['im:name'] != null;
+var isAppInformationEntry = function(entry) {
+  // App information is available in an entry with some special fields
+  return entry != null && entry['im:name'] != null;
 }
 
-var slackMessage = function(review, config) {
-  if (config.debug) console.log("Creating message for review " + review.title);
+var updateAppInformation = function(config, info, appInformation) {
+  if (config.appName == null && info['im:name'] != null) {
+    appInformation.appName = info['im:name']['#'];
+    if (config.debug) console.log("INFO: Found app name: " + appInformation.appName);
+  }
+
+  if (config.appIcon == null && info['im:image'] && info['im:image'].length > 0) {
+    appInformation.appIcon = info['im:image'][0]['#'];
+    if (config.debug) console.log("INFO: Found app icon: " + appInformation.appIcon);
+  }
+
+  if (config.appLink == null && info['link']) {
+    appInformation.appLink = info['link'];
+    if (config.debug) console.log("INFO: Found app link: " + appInformation.appLink);
+  }
+}
+
+var slackMessage = function(review, config, appInformation) {
+  if (config.debug) console.log("INFO: Creating message for review " + review.title);
 
   var title = review.title;
   var rating = review['im:rating'] != null && !isNaN(review['im:rating']['#']) ? parseInt(review['im:rating']['#']) : -1;
@@ -106,8 +114,8 @@ var slackMessage = function(review, config) {
   }
 
   var pretext = "New review";
-  if (config.appName != null) {
-    pretext += " for " + config.appName;
+  if (config.appName != null || appInformation.appName != null) {
+    pretext += " for " + (config.appName ? config.appName : appInformation.appName);
   }
   pretext += "!";
 
@@ -130,10 +138,10 @@ var slackMessage = function(review, config) {
         "color": color,
 
         "author_name": stars,
-        "author_icon": config.appIcon,
+        "author_icon": config.appIcon ? config.appIcon : appInformation.appIcon,
 
         "title": title,
-        "title_link": config.appLink,
+        "title_link": config.appLink ? config.appLink : appInformation.appLink,
 
         "text": text
       }
@@ -145,7 +153,7 @@ var slackMessage = function(review, config) {
 
 var postToSlack = function(message, config) {
   messageJSON = JSON.stringify(message);
-  if (config.debug) console.log("Posting new message to Slack: " + messageJSON);
+  if (config.debug) console.log("INFO: Posting new message to Slack: " + messageJSON);
   return result = request.post({
     url: config.slackHook,
     headers: {
