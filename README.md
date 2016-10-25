@@ -1,12 +1,12 @@
 # reviews-to-slack
 
-[Node.js](https://nodejs.org/) library for posting app reviews to [Slack](https://slack.com/).
+[Node.js](https://nodejs.org/) library for posting [App Store](https://itunes.apple.com/us/genre/ios/id36) and [Google Play](https://play.google.com/store) app reviews to [Slack](https://slack.com/).
 
 ```js
 var reviews = require('reviews-to-slack')
 reviews.start({
   slackHook: 'https://hooks.slack.com/services/T00000000/B00000000/token',
-  feed: 'https://itunes.apple.com/us/rss/customerreviews/id=123456789/sortBy=mostRecent/xml'
+  appId: '123456789'
 })
 ```
 
@@ -26,7 +26,7 @@ Only provide mandatory fields to send reviews for an app to the default channel 
 var reviews = require('reviews-to-slack')
 reviews.start({
   slackHook: 'https://hooks.slack.com/services/T00000000/B00000000/token',
-  feed: 'https://itunes.apple.com/us/rss/customerreviews/id=123456789/sortBy=mostRecent/xml'
+  appId: '123456789'
 })
 ```
 
@@ -38,11 +38,11 @@ Example that sends reviews for different apps to different channels. Can be exte
 var reviews = require('reviews-to-slack')
 var apps = [
   {
-    feed: 'https://itunes.apple.com/us/rss/customerreviews/id=123456789/sortBy=mostRecent/xml',
+    appId: '123456789',
     channel: '#channel'
   },
   {
-    feed: 'https://itunes.apple.com/us/rss/customerreviews/id=987654321/sortBy=mostRecent/xml',
+    appId: 'com.my.app',
     channel: '@user'
   }
 ]
@@ -50,7 +50,7 @@ for (var i = 0; i < apps.length; i++) {
   var app = app[i]
   reviews.start({
     slackHook: 'https://hooks.slack.com/services/T00000000/B00000000/token',
-    feed: app.feed,
+    appId: app.appId,
     channel: app.channel
   })
 }
@@ -59,15 +59,17 @@ for (var i = 0; i < apps.length; i++) {
 ## start(options) -- Available options
 
  - `slackHook`: Mandatory, URL to an incoming Slack webhook
- - `feed`: Mandatory, URL to a review feed, i.e. `https://itunes.apple.com/COUNTRY_IDENTIFIER/rss/customerreviews/id=APP_ID/sortBy=mostRecent/xml`
+ - `appId`: Mandatory, ID of an app in App Store or Google Play, e.g. `123456789` or `com.my.app`
+ - `region`: Two-letter country code for App Store (e.g. `us`), or two-letter language code for Google Play (e.g. `en`)
  - `interval`: How often the feed should be queried, in seconds. **Default**: `300`
  - `debug`: Set to `true` to log debug information and send welcome message to Slack. **Default**: `false`
  - `channel`: Which channel to post to, set to override channel set in Slack
+ - `store`: To explicitly set the store, `app-store` or `google-play`. In most cases desired store can be derived from the appId so setting this is usually not required.
  - `botUsername`: Set to override the default bot username set in Slack
  - `botIcon`: Set to override the default bot icon set in Slack
- - `appName`: Set to override the app name fetched from the feed
- - `appIcon`: Set to override the app icon fetched from the feed
- - `appLink`: Set to override the app link fetched from the feed
+ - `appName`: Set to override the app name fetched from the feed (name is currently not fetched automatically from Google Play)
+ - `appIcon`: Set to override the app icon fetched from the feed (icon is currently not fetched automatically from Google Play)
+ - `appLink`: Set to override the app link fetched from the feed (link is currently not fetched automatically from Google Play)
 
 ## License
 [MIT](LICENSE)
