@@ -1,6 +1,6 @@
 /*!
  * reviews-to-slack
- * Copyright(c) 2015 Niklas Wahlén
+ * Copyright(c) 2016 Niklas Wahlén
  * MIT Licensed
  */
 
@@ -159,15 +159,30 @@ exports.fetchGooglePlayReviews = function(config, appInformation, callback) {
         // The body contains some unwanted prefix data, then a JSON matrix (starts with '[')
         // The actual HTML body that contains the reviews is at position (0,2).
         body_string = String(body);
-        json_body = JSON.parse(body_string.substring(body_string.indexOf('[')));
+        json_body = [];
+        try {
+          json_body = JSON.parse(body_string.substring(body_string.indexOf('[')));
+        } catch (e) {
+          console.error("ERROR: [" + config.appId + "] Could not parse JSON in: " + body_string + ", " + e);
+          callback([]);
+          return;
+        }
+
         reviews_body = json_body[0][2];
 
         if (!reviews_body) {
           if (config.debug) console.log("INFO: [" + config.appId + "] No reviews in body: " + body_string);
           callback([]);
+          return;
         }
 
-        $ = cheerio.load(reviews_body);
+        try {
+          $ = cheerio.load(reviews_body);
+        } catch (e) {
+          console.error("ERROR: [" + config.appId + "] Could not parse HTML: " + reviews_body + ", " + e);
+          callback([]);
+          return;
+        }
 
         var html_reviews = $('.single-review');
 
@@ -189,8 +204,6 @@ exports.fetchGooglePlayReviews = function(config, appInformation, callback) {
 
           return review;
         });
-
-        console.log("INFO: [" + config.appId + "] Found " + reviews.length + " reviews");
 
         callback(reviews);
       }

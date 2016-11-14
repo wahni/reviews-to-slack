@@ -1,6 +1,6 @@
 {
   "name": "reviews-to-slack",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Post app reviews to Slack",
   "scripts": {
     "test": "npm run test-unit",
