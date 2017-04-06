@@ -47,7 +47,7 @@ var apps = [
   }
 ]
 for (var i = 0; i < apps.length; i++) {
-  var app = app[i]
+  var app = apps[i]
   reviews.start({
     slackHook: 'https://hooks.slack.com/services/T00000000/B00000000/token',
     appId: app.appId,
