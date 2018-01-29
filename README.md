@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/wahni/reviews-to-slack.svg?branch=master)](https://travis-ci.org/wahni/reviews-to-slack)
+
 # reviews-to-slack
 
 [Node.js](https://nodejs.org/) library for posting [App Store](https://itunes.apple.com/us/genre/ios/id36) and [Google Play](https://play.google.com/store) app reviews to [Slack](https://slack.com/).
