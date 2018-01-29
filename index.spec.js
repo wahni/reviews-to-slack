@@ -1,10 +1,14 @@
+/* global describe before */
+/* global describe beforeEach */
+/* global describe afterEach */
+/* global describe it */
+
 const sinon = require('sinon')
 const chai = require('chai')
 const expect = require('chai').expect
 const sinonChai = require('sinon-chai')
 
-const Watcher = require('rss-watcher');
-const request = require('request');
+const Watcher = require('rss-watcher')
 
 const reviews = require('./index')
 
@@ -29,8 +33,8 @@ describe('The module', function () {
     const review = {id: '123'}
     const config = {}
 
-    markReviewAsPublishedSpy = this.sandbox.spy(reviews, 'markReviewAsPublished')
-    reviewPublishedSpy = this.sandbox.spy(reviews, 'reviewPublished')
+    const markReviewAsPublishedSpy = this.sandbox.spy(reviews, 'markReviewAsPublished')
+    const reviewPublishedSpy = this.sandbox.spy(reviews, 'reviewPublished')
 
     expect(reviews.publishedReviews().length).to.eql(0)
 
@@ -40,7 +44,7 @@ describe('The module', function () {
     expect(reviewPublishedSpy.callCount).to.eql(1)
 
     expect(reviews.publishedReviews().length).to.eql(1)
-    expect(reviews.reviewPublished(review)).to.be.true
+    expect(reviews.reviewPublished(review)).to.eql(true)
   })
 
   it('does not mark other review as published', function * () {
@@ -52,15 +56,15 @@ describe('The module', function () {
 
     reviews.markReviewAsPublished(config, review)
 
-    expect(reviews.reviewPublished(review)).to.be.true
-    expect(reviews.reviewPublished(otherReview)).to.be.false
+    expect(reviews.reviewPublished(review)).to.eql(true)
+    expect(reviews.reviewPublished(otherReview)).to.eql(false)
   })
 
   it('resolves store to App Store', function * () {
     const config = {appId: '123'}
 
     const watcherSetStub = this.sandbox.stub(Watcher.prototype, 'set', function (settings) {
-      return;
+
     })
     expect(watcherSetStub.callCount).to.eql(0)
     reviews.start(config)
@@ -71,7 +75,7 @@ describe('The module', function () {
   it('resolves store to Google Play', function * () {
     const config = {appId: 'com.google.play'}
     const fetchGooglePlayReviewsStub = this.sandbox.stub(reviews, 'fetchGooglePlayReviews', function (config, appInformation) {
-      return [];
+      return []
     })
     expect(fetchGooglePlayReviewsStub.callCount).to.eql(0)
     reviews.start(config)
@@ -80,24 +84,24 @@ describe('The module', function () {
   })
 
   it('parses App Store RSS item', function * () {
-  	const config = {
-  		appId: '123',
-  		appLink: 'http://www.google.com',
-  		store: 'app-store'
-  	}
-  	const theDate = new Date('2016-09-14T05:58:00-07:00')
+    const config = {
+      appId: '123',
+      appLink: 'http://www.google.com',
+      store: 'app-store'
+    }
+    const theDate = new Date('2016-09-14T05:58:00-07:00')
     const rssItem = {
-    	id: '123',
-    	title: 'the title of the review',
+      id: '123',
+      title: 'the title of the review',
       description: 'the text of the review',
-    	author: 'the author',
-    	date: theDate,
-    	'im:rating': {
-    		'#': 3
-    	}
+      author: 'the author',
+      date: theDate,
+      'im:rating': {
+        '#': 3
+      }
     }
 
-    review = reviews.parseAppStoreReview(rssItem, config, {})
+    const review = reviews.parseAppStoreReview(rssItem, config, {})
 
     expect(review.id).to.eql('123')
     expect(review.title).to.eql('the title of the review')
@@ -119,15 +123,15 @@ describe('The module', function () {
       store: 'app-store'
     }
     const review = {
-    	title: 'the title',
+      title: 'the title',
       text: 'the text',
-    	rating: 2,
-    	link: 'http://www.google.com',
+      rating: 2,
+      link: 'http://www.google.com',
       author: 'the author',
       storeName: 'App Store'
     }
 
-    message = reviews.slackMessage(review, config, {})
+    const message = reviews.slackMessage(review, config, {})
 
     expect(message.username).to.eql('the bot\'s username')
     expect(message.icon_url).to.eql('http://i.imgur.com/asdF.jpg')
@@ -135,7 +139,7 @@ describe('The module', function () {
 
     const attachment = message.attachments[0]
 
-    expect(attachment.mrkdwn_in).to.eql(["text", "pretext", "title"])
+    expect(attachment.mrkdwn_in).to.eql(['text', 'pretext', 'title'])
     expect(attachment.fallback).to.eql('New review for ' + config.appName + '!: ' + review.title + ' (★★☆☆☆): ' + review.text)
 
     expect(attachment.pretext).to.eql('New review for ' + config.appName + '!')
@@ -185,7 +189,6 @@ describe('The module', function () {
         default:
           break
       }
-      return
     })
 
     const reviewsPostToSlackStub = this.sandbox.stub(reviews, 'postToSlack')
@@ -199,19 +202,19 @@ describe('The module', function () {
     expect(reviewsFetchGooglePlayReviewsStub.callCount).to.eql(1)
     expect(reviewsPostToSlackStub.callCount).to.eql(0)
 
-    this.clock.tick(1000);
+    this.clock.tick(1000)
 
     // Second call
     expect(reviewsFetchGooglePlayReviewsStub.callCount).to.eql(2)
     expect(reviewsPostToSlackStub.callCount).to.eql(0)
 
-    this.clock.tick(1000);
+    this.clock.tick(1000)
 
     // Third call (should post a new message to Slack)
     expect(reviewsFetchGooglePlayReviewsStub.callCount).to.eql(3)
     expect(reviewsPostToSlackStub.callCount).to.eql(1)
 
-    this.clock.tick(1000);
+    this.clock.tick(1000)
 
     // Fourth call
     expect(reviewsFetchGooglePlayReviewsStub.callCount).to.eql(4)
