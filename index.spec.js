@@ -63,7 +63,7 @@ describe('The module', function () {
   it('resolves store to App Store', function * () {
     const config = {appId: '123'}
 
-    const watcherSetStub = this.sandbox.stub(Watcher.prototype, 'set', function (settings) {
+    const watcherSetStub = this.sandbox.stub(Watcher.prototype, 'set').callsFake(function (settings) {
 
     })
     expect(watcherSetStub.callCount).to.eql(0)
@@ -74,7 +74,7 @@ describe('The module', function () {
 
   it('resolves store to Google Play', function * () {
     const config = {appId: 'com.google.play'}
-    const fetchGooglePlayReviewsStub = this.sandbox.stub(reviews, 'fetchGooglePlayReviews', function (config, appInformation) {
+    const fetchGooglePlayReviewsStub = this.sandbox.stub(reviews, 'fetchGooglePlayReviews').callsFake(function (config, appInformation) {
       return []
     })
     expect(fetchGooglePlayReviewsStub.callCount).to.eql(0)
@@ -172,7 +172,7 @@ describe('The module', function () {
       {id: 789}
     ]
 
-    const reviewsFetchGooglePlayReviewsStub = this.sandbox.stub(reviews, 'fetchGooglePlayReviews', function (config, appInformation, callback) {
+    const reviewsFetchGooglePlayReviewsStub = this.sandbox.stub(reviews, 'fetchGooglePlayReviews').callsFake(function (config, appInformation, callback) {
       switch (reviewsFetchGooglePlayReviewsStub.callCount) {
         case 1:
           // First call
