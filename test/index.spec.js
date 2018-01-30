@@ -10,7 +10,7 @@ const sinonChai = require('sinon-chai')
 
 const Watcher = require('rss-watcher')
 
-const reviews = require('./index')
+const reviews = require('../index')
 
 before(function () {
   chai.use(sinonChai)
