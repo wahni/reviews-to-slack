@@ -61,18 +61,18 @@ for (var i = 0; i < apps.length; i++) {
 
 ## start(options) -- Available options
 
- - `slackHook`: Mandatory, URL to an incoming Slack webhook
- - `appId`: Mandatory, ID of an app in App Store or Google Play, e.g. `123456789` or `com.my.app`
- - `region`: Two-letter country code for App Store (e.g. `us`), or two-letter language code for Google Play (e.g. `en`)
+ - `slackHook`: Mandatory, URL to an incoming Slack webhook.
+ - `appId`: Mandatory, ID of an app in App Store or Google Play, e.g. `123456789` or `com.my.app`.
+ - `region`: Two-letter country code for App Store (e.g. `us`), or two-letter language code for Google Play (e.g. `en`).
  - `interval`: How often the feed should be queried, in seconds. **Default**: `300`
  - `debug`: Set to `true` to log debug information and send welcome message to Slack. **Default**: `false`
- - `channel`: Which channel to post to, set to override channel set in Slack
+ - `channel`: Which channel to post to, set to override channel set in Slack.
  - `store`: To explicitly set the store, `app-store` or `google-play`. In most cases desired store can be derived from the appId so setting this is usually not required.
- - `botUsername`: Set to override the default bot username set in Slack
- - `botIcon`: Set to override the default bot icon set in Slack
- - `appName`: Set to override the app name fetched from the feed (name is currently not fetched automatically from Google Play)
- - `appIcon`: Set to override the app icon fetched from the feed (icon is currently not fetched automatically from Google Play)
- - `appLink`: Set to override the app link fetched from the feed (link is currently not fetched automatically from Google Play)
+ - `botUsername`: Set to override the default bot username set in Slack.
+ - `botIcon`: Set to override the default bot icon set in Slack.
+ - `appName`: Set to override the app name fetched from the reviews provider.
+ - `appIcon`: Set to override the app icon fetched from the reviews provider.
+ - `appLink`: Set to override the app link fetched from the reviews provider.
 
 ## License
 [MIT](LICENSE)
