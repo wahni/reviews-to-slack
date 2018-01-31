@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/wahni/reviews-to-slack.svg?branch=master)](https://travis-ci.org/wahni/reviews-to-slack)
-[![Coverage Status](https://coveralls.io/repos/github/wahni/reviews-to-slack/badge.svg?branch=coveralls)](https://coveralls.io/github/wahni/reviews-to-slack?branch=coveralls)
+[![Coverage Status](https://coveralls.io/repos/github/wahni/reviews-to-slack/badge.svg?branch=master)](https://coveralls.io/github/wahni/reviews-to-slack?branch=master)
 
 # reviews-to-slack
 
