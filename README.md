@@ -74,5 +74,11 @@ for (var i = 0; i < apps.length; i++) {
  - `appIcon`: Set to override the app icon fetched from the reviews provider.
  - `appLink`: Set to override the app link fetched from the reviews provider.
 
+## FAQ
+
+### Why don't I receive any App Store reviews, or why are they coming in bursts?
+
+Apple is caching their reviews feed quite heavily; you can check if there's actually a new review available by going to `https://itunes.apple.com/{region}/rss/customerreviews/id={appId}/sortBy=mostRecent/xml`. It may take several hours between updates to the feed. If you see a new review in the feed and it's not delivered to Slack in a timely manner, please [file an issue](https://github.com/wahni/reviews-to-slack/issues).
+
 ## License
 [MIT](LICENSE)
