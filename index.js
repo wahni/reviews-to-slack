@@ -55,9 +55,9 @@ var publishedReviews = [];
           return
         }
 
-        if (isAppInformationEntry(item)) {
+        if (isAppStoreInformationEntry(item)) {
           if (config.debug) console.log('INFO: Received new app information')
-          updateAppInformation(config, item, appInformation)
+          updateAppStoreAppInformation(config, item, appInformation)
           return
         }
 
@@ -91,7 +91,7 @@ var publishedReviews = [];
           // Mark any eixsting reviews as published
           exports.markReviewAsPublished(config, review)
 
-          updateAppInformation(config, item, appInformation)
+          updateAppStoreAppInformation(config, item, appInformation)
         }
 
         if (config.debug) {
@@ -101,31 +101,62 @@ var publishedReviews = [];
         }
       })
     } else {
-      exports.fetchGooglePlayReviews(config, appInformation, function (initialReviews) {
-        for (var i = 0; i < initialReviews.length; i++) {
-          var initialReview = initialReviews[i]
-          exports.markReviewAsPublished(config, initialReview)
-        }
+      exports.setupGooglePlayAppInformation(config, appInformation, function () {
+        exports.fetchGooglePlayReviews(config, appInformation, function (initialReviews) {
+          for (var i = 0; i < initialReviews.length; i++) {
+            var initialReview = initialReviews[i]
+            exports.markReviewAsPublished(config, initialReview)
+          }
 
-        var intervalSeconds = config.interval ? config.interval : DEFAULT_INTERVAL_SECONDS
+          var intervalSeconds = config.interval ? config.interval : DEFAULT_INTERVAL_SECONDS
 
-        setInterval(function (config, appInformation) {
-          if (config.debug) console.log('INFO: [' + config.appId + '] Fetching Google Play reviews')
+          setInterval(function (config, appInformation) {
+            if (config.debug) console.log('INFO: [' + config.appId + '] Fetching Google Play reviews')
 
-          exports.fetchGooglePlayReviews(config, appInformation, function (reviews) {
-            exports.handleFetchedGooglePlayReviews(config, appInformation, reviews)
-          })
-        }, intervalSeconds * 1000, config, appInformation)
+            exports.fetchGooglePlayReviews(config, appInformation, function (reviews) {
+              exports.handleFetchedGooglePlayReviews(config, appInformation, reviews)
+            })
+          }, intervalSeconds * 1000, config, appInformation)
 
-        if (config.debug) {
-          console.log('INFO: [' + config.appId + '] Started watching app: ' + (config.appName ? config.appName : appInformation.appName))
-          var welcome = welcomeMessage(config, appInformation)
-          exports.postToSlack(welcome, config)
-        }
+          if (config.debug) {
+            console.log('INFO: [' + config.appId + '] Started watching app: ' + (config.appName ? config.appName : appInformation.appName))
+            var welcome = welcomeMessage(config, appInformation)
+            exports.postToSlack(welcome, config)
+          }
+        })
       })
     }
   }
 }).call(this)
+
+// Google Play
+
+exports.setupGooglePlayAppInformation = function (config, appInformation, callback) {
+  appInformation.appLink = 'https://play.google.com/store/apps/details?id=' + config.appId
+
+  if (config.region) {
+    appInformation.appLink += '&gl=' + config.region + '&hl=' + config.region
+  }
+
+  request.get(appInformation.appLink, function (error, response, body) {
+    if (error) {
+      console.error('WARNING: [' + config.appId + '] Could not fetch app information, ' + error)
+    } else {
+      const $ = cheerio.load(body)
+      appInformation.appName = $('.id-app-title').text().trim()
+      if (config.debug) console.log('INFO: [' + config.appId + '] Fetched app name: ' + appInformation.appName)
+
+      var webpIcon = $('.cover-image').attr('src')
+      if (!webpIcon.startsWith('http')) {
+        webpIcon = 'https:' + webpIcon
+      }
+      appInformation.appIcon = webpIcon + '-no-tmp.png' // Force png as Slack currently cannot display the WebP image.
+      if (config.debug) console.log('INFO: [' + config.appId + '] Fetched app icon: ' + appInformation.appIcon)
+    }
+
+    callback()
+  })
+}
 
 exports.handleFetchedGooglePlayReviews = function (config, appInformation, reviews) {
   for (var n = 0; n < reviews.length; n++) {
@@ -234,15 +265,15 @@ exports.resetPublishedReviews = function () {
   publishedReviews = []
 }
 
-// App Store app information
+// App Store
 
-var isAppInformationEntry = function (entry) {
-    // App information is available in an entry with some special fields
+var isAppStoreInformationEntry = function (entry) {
+    // App Store app information is available in an entry with some special fields
   return entry != null && entry['im:name']
 }
 
-var updateAppInformation = function (config, entry, appInformation) {
-  if (!isAppInformationEntry(entry)) return
+var updateAppStoreAppInformation = function (config, entry, appInformation) {
+  if (!isAppStoreInformationEntry(entry)) return
 
   if (config.appName == null && entry['im:name'] != null) {
     appInformation.appName = entry['im:name']['#']
