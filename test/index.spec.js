@@ -8,6 +8,7 @@ const chai = require('chai')
 const expect = require('chai').expect
 const sinonChai = require('sinon-chai')
 
+const request = require('request')
 const Watcher = require('rss-watcher')
 
 const reviews = require('../index')
@@ -74,11 +75,16 @@ describe('The module', function () {
 
   it('resolves store to Google Play', function * () {
     const config = {appId: 'com.google.play'}
+    const setupGooglePlayAppInformationStub = this.sandbox.stub(reviews, 'setupGooglePlayAppInformation').callsFake(function (config, appInformation, callback) {
+      callback()
+    })
     const fetchGooglePlayReviewsStub = this.sandbox.stub(reviews, 'fetchGooglePlayReviews').callsFake(function (config, appInformation) {
       return []
     })
+    expect(setupGooglePlayAppInformationStub.callCount).to.eql(0)
     expect(fetchGooglePlayReviewsStub.callCount).to.eql(0)
     reviews.start(config)
+    expect(setupGooglePlayAppInformationStub.callCount).to.eql(1)
     expect(fetchGooglePlayReviewsStub.callCount).to.eql(1)
     expect(config.store).to.eql('google-play')
   })
@@ -172,6 +178,10 @@ describe('The module', function () {
       {id: 789}
     ]
 
+    const setupGooglePlayAppInformationStub = this.sandbox.stub(reviews, 'setupGooglePlayAppInformation').callsFake(function (config, appInformation, callback) {
+      callback()
+    })
+
     const reviewsFetchGooglePlayReviewsStub = this.sandbox.stub(reviews, 'fetchGooglePlayReviews').callsFake(function (config, appInformation, callback) {
       switch (reviewsFetchGooglePlayReviewsStub.callCount) {
         case 1:
@@ -193,6 +203,7 @@ describe('The module', function () {
 
     const reviewsPostToSlackStub = this.sandbox.stub(reviews, 'postToSlack')
 
+    expect(setupGooglePlayAppInformationStub.callCount).to.eql(0)
     expect(reviewsFetchGooglePlayReviewsStub.callCount).to.eql(0)
     expect(reviewsPostToSlackStub.callCount).to.eql(0)
 
@@ -219,5 +230,28 @@ describe('The module', function () {
     // Fourth call
     expect(reviewsFetchGooglePlayReviewsStub.callCount).to.eql(4)
     expect(reviewsPostToSlackStub.callCount).to.eql(1)
+
+    // Finally
+    expect(setupGooglePlayAppInformationStub.callCount).to.eql(1)
+  })
+
+  it('sets up Google Play app information when not overriden', function * () {
+    const config = {
+      appId: 'com.mock.id'
+    }
+    var appInformation = {}
+
+    const body = '<body><span class="id-app-title"> Expected App Title </span><img class="cover-image" src="cover-image-src"></img></body>'
+
+    const requestGetStub = this.sandbox.stub(request, 'get').callsFake(function (url, callback) {
+      callback(null, null, body)
+    })
+
+    reviews.setupGooglePlayAppInformation(config, appInformation, function () {})
+
+    expect(requestGetStub.callCount).to.eql(1)
+    expect(appInformation.appLink).to.eql('https://play.google.com/store/apps/details?id=com.mock.id')
+    expect(appInformation.appName).to.eql('Expected App Title')
+    expect(appInformation.appIcon).to.eql('https:cover-image-src-no-tmp.png')
   })
 })
