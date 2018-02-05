@@ -1,7 +1,10 @@
-[![Build Status](https://travis-ci.org/wahni/reviews-to-slack.svg?branch=master)](https://travis-ci.org/wahni/reviews-to-slack)
-[![Coverage Status](https://coveralls.io/repos/github/wahni/reviews-to-slack/badge.svg?branch=master)](https://coveralls.io/github/wahni/reviews-to-slack?branch=master)
 
 # reviews-to-slack
+
+[![Build Status](https://travis-ci.org/wahni/reviews-to-slack.svg?branch=master)](https://travis-ci.org/wahni/reviews-to-slack)
+[![npm version](https://badge.fury.io/js/reviews-to-slack.svg)](https://badge.fury.io/js/reviews-to-slack)
+[![Coverage Status](https://coveralls.io/repos/github/wahni/reviews-to-slack/badge.svg?branch=master)](https://coveralls.io/github/wahni/reviews-to-slack?branch=master)
+[![dependencies Status](https://david-dm.org/wahni/reviews-to-slack/status.svg)](https://david-dm.org/wahni/reviews-to-slack)
 
 [Node.js](https://nodejs.org/) library for posting [App Store](https://itunes.apple.com/us/genre/ios/id36) and [Google Play](https://play.google.com/store) app reviews to [Slack](https://slack.com/).
 
