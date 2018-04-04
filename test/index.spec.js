@@ -236,12 +236,10 @@ describe('The module', function () {
   })
 
   it('sets up Google Play app information when not overriden', function * () {
-    const config = {
-      appId: 'com.mock.id'
-    }
+    const config = { appId: 'com.mock.id' }
     var appInformation = {}
 
-    const body = '<body><span class="id-app-title"> Expected App Title </span><img class="cover-image" src="cover-image-src"></img></body>'
+    const body = '<body><h1 itemprop="name"><span> Expected App Title </span></h1><img src="cover-image-src" itemprop="image"></img></body>'
 
     const requestGetStub = this.sandbox.stub(request, 'get').callsFake(function (url, callback) {
       callback(null, null, body)
@@ -253,5 +251,37 @@ describe('The module', function () {
     expect(appInformation.appLink).to.eql('https://play.google.com/store/apps/details?id=com.mock.id')
     expect(appInformation.appName).to.eql('Expected App Title')
     expect(appInformation.appIcon).to.eql('https:cover-image-src-no-tmp.png')
+  })
+
+  it('handels empty Google Play page body gracefully', function * () {
+    const config = { appId: 'com.mock.id' }
+    var appInformation = {}
+
+    const requestGetStub = this.sandbox.stub(request, 'get').callsFake(function (url, callback) {
+      callback(null, null, '<body></body>')
+    })
+
+    reviews.setupGooglePlayAppInformation(config, appInformation, function () {})
+
+    expect(requestGetStub.callCount).to.eql(1)
+    expect(appInformation.appLink).to.eql('https://play.google.com/store/apps/details?id=com.mock.id')
+    expect(appInformation.appName).to.eql('')
+    expect(appInformation.appIcon).to.eql('undefined-no-tmp.png')
+  })
+
+  it('handels null Google Play page response gracefully', function * () {
+    const config = { appId: 'com.mock.id' }
+    var appInformation = {}
+
+    const requestGetStub = this.sandbox.stub(request, 'get').callsFake(function (url, callback) {
+      callback(null, null, null)
+    })
+
+    reviews.setupGooglePlayAppInformation(config, appInformation, function () {})
+
+    expect(requestGetStub.callCount).to.eql(1)
+    expect(appInformation.appLink).to.eql('https://play.google.com/store/apps/details?id=com.mock.id')
+    expect(appInformation.appName).to.eql(undefined)
+    expect(appInformation.appIcon).to.eql(undefined)
   })
 })

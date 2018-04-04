@@ -1,6 +1,6 @@
 /*!
  * reviews-to-slack
- * Copyright(c) 2016 Niklas Wahlén
+ * Copyright(c) 2018 Niklas Wahlén
  * MIT Licensed
  */
 
@@ -141,13 +141,13 @@ exports.setupGooglePlayAppInformation = function (config, appInformation, callba
   request.get(appInformation.appLink, function (error, response, body) {
     if (error) {
       console.error('WARNING: [' + config.appId + '] Could not fetch app information, ' + error)
-    } else {
+    } else if (body) {
       const $ = cheerio.load(body)
-      appInformation.appName = $('.id-app-title').text().trim()
+      appInformation.appName = $('[itemprop="name"]').text().trim()
       if (config.debug) console.log('INFO: [' + config.appId + '] Fetched app name: ' + appInformation.appName)
 
-      var webpIcon = $('.cover-image').attr('src')
-      if (!webpIcon.startsWith('http')) {
+      var webpIcon = $('[itemprop="image"]').attr('src')
+      if (typeof webpIcon === 'string' && !webpIcon.startsWith('http')) {
         webpIcon = 'https:' + webpIcon
       }
       appInformation.appIcon = webpIcon + '-no-tmp.png' // Force png as Slack currently cannot display the WebP image.
